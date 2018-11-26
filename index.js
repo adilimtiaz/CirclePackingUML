@@ -1,7 +1,8 @@
-var svg = d3.select("svg"),
+var containerDiv = document.getElementById("container");
+var svg = d3.select(containerDiv).append("svg"),
     margin = 20,
-    diameter = +svg.attr("width"),
-    g = svg.append("g").attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
+    diameter = 700;
+    g = svg.append("g");
 
 var color = d3.scaleLinear()
     .domain([-1, 5])
@@ -11,6 +12,27 @@ var color = d3.scaleLinear()
 var pack = d3.pack()
     .size([diameter - margin, diameter - margin])
     .padding(2);
+
+function redraw() {
+    // Deals with resizing the window
+  var width = containerDiv.clientWidth;
+  var height = containerDiv.clientHeight;
+  var minspace = Math.min(width, height);
+  diameter = Math.max(minspace - 10, 200);
+  margin = 10;
+  // Use the extracted size to set the size of the SVG element.
+  svg
+    .attr("width", width)
+    .attr("height", height)
+
+  g.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+  pack
+    .size([diameter - margin, diameter - margin])
+    .padding(2);
+}
+
+redraw();
 
 d3.json("output.json", function(error, root) {
   if (error) throw error;
@@ -100,9 +122,20 @@ d3.json("output.json", function(error, root) {
         .on("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
   }
 
+
+  // Redraw based on the new size whenever the browser window is resized.
+  window.addEventListener("resize", reziser);
+
+  function reziser() {
+      redraw();
+      zoomTo([focus.x, focus.y, focus.r * 2 + margin]);
+  }
+
   function zoomTo(v) {
     var k = diameter / v[2]; view = v;
     node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
     circle.attr("r", function(d) { return d.r * k; });
+    text.style("font-size", diameter / 50 + "px")
+        .style("font-family", "Trebuchet MS");
   }
 });
