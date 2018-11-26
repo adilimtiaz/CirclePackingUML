@@ -12,12 +12,43 @@ var pack = d3.pack()
     .size([diameter - margin, diameter - margin])
     .padding(2);
 
-d3.json("flare.json", function(error, root) {
+d3.json("output.json", function(error, root) {
   if (error) throw error;
 
-  root = d3.hierarchy(root)
+  console.log(root);
+  d3JSON = {name : "Random"};
+  d3JSON.children = [];
+
+
+  for(var i = 0; i<root.classes.length; i++) {
+    var javaClass = root.classes[i];
+    console.log(javaClass);
+    var classChild = {};
+    classChild.name = javaClass.name;
+    classChild.children = [];
+    if(javaClass.functions){
+      for(var j = 0; j<javaClass.functions.length; j++){
+        var javaFunc = javaClass.functions[j];
+        var funcChild = {};
+        funcChild.name = javaFunc.name;
+        funcChild.size = javaFunc.methodLines;
+        if(!funcChild.size){
+          funcChild.size = 1.5; // this means abstract
+        }
+        classChild.children.push(funcChild);
+      }
+    }
+    classChild.size = javaClass.number_of_lines;
+    d3JSON.children.push(classChild);
+  }
+
+  console.log(d3JSON);
+
+  root = d3.hierarchy(d3JSON)
       .sum(function(d) { return d.size; })
       .sort(function(a, b) { return b.value - a.value; });
+
+
 
   var focus = root,
       nodes = pack(root).descendants(),
@@ -27,7 +58,13 @@ d3.json("flare.json", function(error, root) {
     .data(nodes)
     .enter().append("circle")
       .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
-      .style("fill", function(d) { return d.children ? color(d.depth) : null; })
+      .style("fill", function(d) {
+        if(d.data.size == 1.5) {
+          console.log("Reached here");
+          return "hsl(0, 57%, 92%)";
+        }
+        return d.children ? color(d.depth) : null;
+      })
       .on("click", function(d) { if (focus !== d) zoom(d), d3.event.stopPropagation(); });
 
   var text = g.selectAll("text")
