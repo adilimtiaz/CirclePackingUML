@@ -125,6 +125,7 @@ d3.json("output.json", function(error, root) {
     .data(nodes)
     .enter().append("text")
       .attr("class", "label")
+      .style("font-family", "Trebuchet MS")
       .style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
       .style("display", function(d) { return d.parent === root ? "inline" : "none"; })
       .text(function(d) { return d.data.name; });
@@ -171,7 +172,6 @@ d3.json("output.json", function(error, root) {
     node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
     circle.attr("r", function(d) { return d.r * k; })
         .attr("pointer-events", function(d) {return (d.parent === focus) ? "all" : "none"}); //Pointer events only work if parent is focus
-    text.style("font-size", diameter / 50 + "px")
-        .style("font-family", "Trebuchet MS");
+    text.style("font-size", diameter / 50 + "px");
   }
 });
