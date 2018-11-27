@@ -8,8 +8,8 @@
 
 import os, javalang, json
 
-input_dir = os.path.expanduser("~/Desktop/original_version")
-output_dir = os.path.expanduser("~/Desktop")
+input_dir = os.path.expanduser("/Users/adilimtiaz/Downloads/tinyVisitorStarter")
+output_dir = os.path.expanduser("/Users/adilimtiaz/PycharmProjects/CS410")
 output_file_name = "output.json"
 
 file_list = []

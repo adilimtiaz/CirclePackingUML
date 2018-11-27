@@ -65,7 +65,9 @@ d3.json("output.json", function(error, root) {
         classChild.children.push(funcChild);
       }
     }
+    classChild.isClass = true;
     classChild.size = javaClass.number_of_lines;
+    classChild.fields = javaClass.fields;
     d3JSON.children.push(classChild);
   }
 
@@ -107,11 +109,23 @@ d3.json("output.json", function(error, root) {
   }
 
   function tooltipmove(d) {
+    console.log(d);
     if (d.parent === focus) {
         // Parent is focus, so show tooltip
-        div.html( d.data.name + "<br/>"  + d.data.size + " lines")
-          .style("left", (d3.event.pageX) + "px")
-          .style("top", (d3.event.pageY - 38) + "px");
+        var divOutput = d.data.name + "<br/>";
+        var linesToDisplay = 1;
+        if(d.data.isClass){
+          for(var i=0; i<d.data.fields.length; i++){
+            divOutput += d.data.fields[i] + "<br/>";
+            linesToDisplay++;
+          }
+        }
+        divOutput += d.data.size
+            + " lines";
+        linesToDisplay++;
+        div.html(divOutput)
+            .style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - (linesToDisplay*19)) + "px");
     }
   }
 
