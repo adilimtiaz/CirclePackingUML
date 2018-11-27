@@ -8,8 +8,8 @@
 
 import os, javalang, json
 
-input_dir = os.path.expanduser("/Users/adilimtiaz/Downloads/tinyVisitorStarter")
-output_dir = os.path.expanduser("/Users/adilimtiaz/PycharmProjects/CS410")
+input_dir = os.path.expanduser("~/Desktop/original_version")
+output_dir = os.path.expanduser("~/Desktop")
 output_file_name = "output.json"
 
 file_list = []
@@ -205,10 +205,10 @@ for file in file_list:
         print "Unusual format in " + file
 
 # output contents to JSON
-jsonFunctionArray = []
 jsonClassArray = []
 jsonFixedClassArray = []
 for c in class_data_list:
+    jsonFunctionArray = []
     for z in c.functions:
         jsonFunction = json.dumps(z, default=jsonDefault)
         jsonFunctionArray.append(jsonFunction)
