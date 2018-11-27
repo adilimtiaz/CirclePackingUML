@@ -124,8 +124,9 @@ d3.json("output.json", function(error, root) {
             + " lines";
         linesToDisplay++;
         div.html(divOutput)
+            .attr('height', (15*linesToDisplay))
             .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - (linesToDisplay*19)) + "px");
+            .style("top", (d3.event.pageY - 38) + "px");
     }
   }
 
