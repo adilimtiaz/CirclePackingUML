@@ -39,38 +39,132 @@ var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+// KUSH CODE
+
+const classStore = {};
+
+const objStore = {};
+
+function addFunctionsToCircle(parentClass,classObj){
+    classObj.functions.forEach(funcObj => {
+        if (parentClass.children){
+            parentClass.children.push({
+                name: funcObj.name,
+                size: (funcObj.methodLines) ? funcObj.methodLines : 1.5,
+                parameters: funcObj.parameters,
+                return_type: funcObj.return_type && funcObj.return_type.name,
+                modifiers: funcObj.methodModifiers
+            })
+        }else{
+            parentClass.children = [{
+                name: funcObj.name,
+                size: (funcObj.methodLines) ? funcObj.methodLines : 1.5,
+                parameters: funcObj.parameters,
+                return_type: funcObj.return_type && funcObj.return_type.name,
+                modifiers: funcObj.methodModifiers
+            }];
+        }
+
+    })
+}
+function digSubClass(superClass,subClassName){
+  addChild(superClass,{name: objStore[subClassName].name, size: objStore[subClassName].number_of_lines});
+
+  if (objStore[subClassName].extended_by.length){
+      // dig deeper into subclass children
+      superClass = superClass.children[superClass.children.length -1];
+      digIntoSubclasses(superClass, objStore[subClassName]);
+  }
+  if (objStore[subClassName].implemented_by.length){
+      // dig deeper into subclass children
+      superClass = superClass.children[superClass.children.length -1];
+      digIntoSubclasses(superClass, objStore[subClassName]);
+  }
+}
+
+function digIntoSubclasses(superClass,subClass){
+  for (let i = 0; i < subClass.extended_by.length; i++) {
+      let subClassName = subClass.extended_by[i];
+      digSubClass(superClass,subClassName);
+  }
+  for (let i = 0; i < subClass.implemented_by.length; i++) {
+      let subClassName = subClass.implemented_by[i];
+      digSubClass(superClass,subClassName);
+  }
+  // console.log(objStore["PRINT"].functions)
+  // if (subClass.name == "PRINT"){
+  //     console.log(subClass)
+  // }
+
+  addFunctionsToCircle(superClass,objStore[subClass.name]);
+}
+
+function addChild(parent,child){
+  if (parent.children){
+      parent.children.push(child)
+  }else{
+      parent.children = [child]
+  }
+}
+
+function orderInheritance(output){
+  // let outputJson = JSON.parse(output);
+  let outputJson = output;
+  // console.log(outputJson.classes[0].name);
+  outputJson.classes.forEach(element =>{
+      objStore[element.name] = element;
+  });
+
+
+  for (let key in objStore){
+      let classObj = objStore[key];
+      // console.log(classStore["Node"])
+
+      // console.log(classObj)
+      if (!classObj.part_of.length){
+          // root class, add as top level prop on classStore
+          classStore[classObj.name] = {
+              name: classObj.name,
+              size: classObj.number_of_lines,
+              fields: classObj.fields,
+              isClass: true
+          };
+          if (!classStore[classObj.name].children){
+              classStore[classObj.name].children = [];
+          }
+          // add functions to root class
+          //console.log(classObj.functions)
+
+
+          // dig into extended_by
+          if (classObj.extended_by.length || classObj.implemented_by.length){
+
+              digIntoSubclasses(classStore[classObj.name], classObj);
+              console.log(objStore["Tokenizer"])
+
+          }else{
+              // no sub classes, add functions to circle
+              addFunctionsToCircle(classStore[classObj.name],classObj);
+              //console.log( classStore[classObj.name].children)
+          }
+      }
+  }
+
+
+}
+
+// END KUSH CODE
+
 d3.json("output.json", function(error, root) {
   if (error) throw error;
 
-  console.log(root);
-  d3JSON = {name : "Random"};
-  d3JSON.children = [];
-
-
-  for(var i = 0; i<root.classes.length; i++) {
-    var javaClass = root.classes[i];
-    console.log(javaClass);
-    var classChild = {};
-    classChild.name = javaClass.name;
-    classChild.children = [];
-    if(javaClass.functions){
-      for(var j = 0; j<javaClass.functions.length; j++){
-        var javaFunc = javaClass.functions[j];
-        var funcChild = {};
-        funcChild.name = javaFunc.name;
-        funcChild.size = javaFunc.methodLines;
-        if(!funcChild.size){
-          funcChild.size = 1.5; // this means abstract
-        }
-        classChild.children.push(funcChild);
-      }
-    }
-    classChild.isClass = true;
-    classChild.size = javaClass.number_of_lines;
-    classChild.fields = javaClass.fields;
-    d3JSON.children.push(classChild);
+  orderInheritance(root);
+  console.log(classStore);
+  d3JSON = {name:"Entry", children: []}
+  for (let key in classStore) {
+      let javaClass = classStore[key];
+      d3JSON.children.push(javaClass);
   }
-
   console.log(d3JSON);
 
   root = d3.hierarchy(d3JSON)
@@ -89,7 +183,6 @@ d3.json("output.json", function(error, root) {
       .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
       .style("fill", function(d) {
         if(d.data.size == 1.5) {
-          console.log("Reached here");
           return "hsl(0, 57%, 92%)";
         }
         return d.children ? color(d.depth) : null;
