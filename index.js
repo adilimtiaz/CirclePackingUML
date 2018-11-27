@@ -34,6 +34,11 @@ function redraw() {
 
 redraw();
 
+// Define the div for the tooltip
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
 d3.json("output.json", function(error, root) {
   if (error) throw error;
 
@@ -87,7 +92,33 @@ d3.json("output.json", function(error, root) {
         }
         return d.children ? color(d.depth) : null;
       })
-      .on("click", function(d) { if (focus !== d) zoom(d), d3.event.stopPropagation(); });
+      .on("mouseover", function(d) {tooltipover(d)})
+      .on("mousemove", function(d) {tooltipmove(d)})
+      .on("mouseout", tooltipout)
+      .on("click", function(d) { if (focus !== d && d.children) zoom(d), d3.event.stopPropagation(); });
+
+  function tooltipover(d) {
+    if (d.parent === focus) {
+        div.transition()
+          .duration(200)
+          .style("opacity", .9);
+    }
+  }
+
+  function tooltipmove(d) {
+    if (d.parent === focus) {
+        // Parent is focus, so show tooltip
+        div.html( d.data.name + "<br/>"  + d.data.size + " lines")
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 38) + "px");
+    }
+  }
+
+  function tooltipout() {
+    div.transition()
+      .duration(500)
+      .style("opacity", 0);
+  }
 
   var text = g.selectAll("text")
     .data(nodes)
@@ -134,7 +165,8 @@ d3.json("output.json", function(error, root) {
   function zoomTo(v) {
     var k = diameter / v[2]; view = v;
     node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
-    circle.attr("r", function(d) { return d.r * k; });
+    circle.attr("r", function(d) { return d.r * k; })
+        .attr("pointer-events", function(d) {return (d.parent === focus) ? "all" : "none"}); //Pointer events only work if parent is focus
     text.style("font-size", diameter / 50 + "px")
         .style("font-family", "Trebuchet MS");
   }
