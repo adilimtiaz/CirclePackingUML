@@ -92,6 +92,7 @@ d3.json("output.json", function(error, root) {
         }
         return d.children ? color(d.depth) : null;
       })
+      .style("fill-opacity", function(d) { return (d.parent === focus || d === focus || !d.parent) ? 1 : 0.2; })
       .on("mouseover", function(d) {tooltipover(d)})
       .on("mousemove", function(d) {tooltipmove(d)})
       .on("mouseout", tooltipout)
@@ -151,6 +152,9 @@ d3.json("output.json", function(error, root) {
         .style("fill-opacity", function(d) { return d.parent === focus ? 1 : 0; })
         .on("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
         .on("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
+
+    transition.selectAll("circle")
+      .style("fill-opacity", function(d) { return (d.parent === focus || d === focus || !d.parent) ? 1 : 0.2; })
   }
 
 
