@@ -195,30 +195,36 @@ d3.json("output1.json", function(error, root) {
         var linesToDisplay = 1;
         var divOutput = "";
         if(d.data.isClass) {
-          divOutput += d.data.size ? "Class " : "External Library ";
-          divOutput += d.data.name + "<br/>  <p style=\"text-align:left\">";
-          linesToDisplay += 2; //Paragraph tag creates 2 line breaks
-          for(var i=0; i<d.data.fields.length; i++){
-            fieldinfo = d.data.fields[i].split(" ");
-            divOutput += "<font color=\"#a7b7f2\">" + fieldinfo[0] + "</font> " + fieldinfo[1] + "<br/>";
-            linesToDisplay++;
+          divOutput += d.data.size ? "<font color=\"#85eae8\"> Class </font>" : "<font color=\"#f1aaa7\"> External Library </font>";
+          divOutput += d.data.name;
+          if (d.data.size) {
+              divOutput += "<br/>  <p style=\"text-align:left\">";
+              linesToDisplay += 2; //Paragraph tag creates 2 line breaks
+              for(var i=0; i<d.data.fields.length; i++){
+                fieldinfo = d.data.fields[i].split(" ");
+                divOutput += "<font color=\"#a7b7f2\">" + fieldinfo[0] + "</font> " + fieldinfo[1] + "<br/>";
+                linesToDisplay++;
+              }
+              divOutput += "</p>";
+              divOutput += d.data.size + " lines";
           }
-          divOutput += "</p>";
-          divOutput += d.data.size ? (d.data.size + " lines") : "";
       } else {
           divOutput = "Function <br/> <p style=\"text-align:left\">";
           modifiers = "<font color=\"#85eae8\">";
           for(var i=0; i<d.data.outputFuncJSON.methodModifiers.length; i++){
               modifiers += d.data.outputFuncJSON.methodModifiers[i] + " ";
+              linesToDisplay++;
           }
           modifiers += "</font>";
-          parameters = "<font color=\"#a7b7f2\">";
+          parameters = ""
           for(var i=0; i<d.data.outputFuncJSON.parameters.length; i++){
-            parameters += d.data.outputFuncJSON.parameters[i] + " ";
+            parameters += parameters.length !== 0 ? ", " : ""
+            paramInfo = d.data.outputFuncJSON.parameters[i].split(" ");
+            parameters += "<font color=\"#a7b7f2\">" + paramInfo[0] +  "</font> " + paramInfo[1];
+            linesToDisplay++;
           }
-          parameters = parameters.trim();
-          parameters += "</font>";
-          info = modifiers + d.data.outputFuncJSON.name + "(" + parameters + ")" + " : " + d.data.outputFuncJSON.return_type + "<br/>";
+          info = modifiers + d.data.outputFuncJSON.name + "(" + parameters + ")" + " : "
+            + "<font color=\"#85eae8\">" + d.data.outputFuncJSON.return_type + "</font> <br/>";
           divOutput += info;
           linesToDisplay++;
           divOutput += "</p>";
@@ -227,7 +233,7 @@ d3.json("output1.json", function(error, root) {
         linesToDisplay++;
         div.html(divOutput)
             .attr('height', (15*linesToDisplay))
-            .style("left", (d3.event.pageX) + "px")
+            .style("left", (d3.event.pageX) + 10 + "px")
             .style("top", (d3.event.pageY - 8 - (15*linesToDisplay)) + "px");
     }
   }
