@@ -31,7 +31,6 @@ div.tooltip {
 div.info {
     position: absolute;
     text-align: center;
-    width: 200px;
     padding: 5px;
     font: 13px "Trebuchet MS", sans-serif;
     color: white;

@@ -130,8 +130,6 @@ d3.json("output1.json", function(error, root) {
       .sum(function(d) { return d.size; })
       .sort(function(a, b) { return b.value - a.value; });
 
-
-
   var focus = root,
       nodes = pack(root).descendants(),
       view;
@@ -145,7 +143,7 @@ d3.json("output1.json", function(error, root) {
             return "hsl(0, 57%, 92%)";
           }
           if(d.data.isClass && !d.data.size){
-            return "hsl(150, 63%, 67%)";
+            return "#ab9ee5";
           }
         return d.children ? color(d.depth) : null;
       })
@@ -160,11 +158,18 @@ d3.json("output1.json", function(error, root) {
       .duration(200)
       .style("opacity", .9);
 
-    divOutput = "In Class: " + d.data.name;
+    parents = "";
+    parent = d.parent;
+    while (parent !== root) {
+        parents = parent.data.name + " > " + parents;
+        parent = parent.parent;
+    }
+    divOutput = "Inside: " + parents + d.data.name;
 
     infobox.html(divOutput)
         .attr('height', 20)
-        .style("left", containerDiv.clientWidth / 2 - 100 + "px")
+        .attr("width", 5 * divOutput.length + 40 + "px")
+        .style("left", containerDiv.clientWidth / 2 - ((5 * divOutput.length + 40) / 2) + "px")
         .style("top", 20 + "px");
   }
 
@@ -194,7 +199,8 @@ d3.json("output1.json", function(error, root) {
           divOutput += d.data.name + "<br/>  <p style=\"text-align:left\">";
           linesToDisplay += 2; //Paragraph tag creates 2 line breaks
           for(var i=0; i<d.data.fields.length; i++){
-            divOutput += d.data.fields[i] + "<br/>";
+            fieldinfo = d.data.fields[i].split(" ");
+            divOutput += "<font color=\"#a7b7f2\">" + fieldinfo[0] + "</font> " + fieldinfo[1] + "<br/>";
             linesToDisplay++;
           }
           divOutput += "</p>";
