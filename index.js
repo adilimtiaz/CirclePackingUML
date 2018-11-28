@@ -68,7 +68,7 @@ function getClassNode(outputJSONClass, outputJSONClasses) {
     let funcNodes = getFunctionsForClassNode(outputJSONClass);
     let subClassNodes = getSubclassNodesForClassNode(outputJSONClass, outputJSONClasses);
 
-    if (funcNodes.length > 0 || subclassNodes.length > 0) {
+    if (funcNodes.length > 0 || subClassNodes.length > 0) {
         classNode.children = [];
         funcNodes.forEach((node) => {
             classNode.children.push(node);
@@ -119,7 +119,7 @@ function getFunctionsForClassNode(outputJSONClass) {
     return funcNodes;
 }
 
-d3.json("output.json", function(error, root) {
+d3.json("output1.json", function(error, root) {
   if (error) throw error;
 
   let d3JSON = {name : "Ultimate Big Daddy"};
