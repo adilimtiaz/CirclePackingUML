@@ -46,132 +46,84 @@ var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-// KUSH CODE
-
-const classStore = {};
-
-const objStore = {};
-
-function addFunctionsToCircle(parentClass,classObj){
-    classObj.functions.forEach(funcObj => {
-        if (parentClass.children){
-            parentClass.children.push({
-                name: funcObj.name,
-                size: (funcObj.methodLines) ? funcObj.methodLines : 1.5,
-                parameters: funcObj.parameters,
-                return_type: funcObj.return_type && funcObj.return_type.name,
-                modifiers: funcObj.methodModifiers
-            })
-        }else{
-            parentClass.children = [{
-                name: funcObj.name,
-                size: (funcObj.methodLines) ? funcObj.methodLines : 1.5,
-                parameters: funcObj.parameters,
-                return_type: funcObj.return_type && funcObj.return_type.name,
-                modifiers: funcObj.methodModifiers
-            }];
+function getRootNodes(outputJSON){
+    let rootNodes = [];
+    outputJSON.classes.forEach((outputJSONClass)=>{
+        if(outputJSONClass.part_of.length == 0){
+            rootNodes.push(getClassNode(outputJSONClass, outputJSON.classes));
         }
+    });
 
-    })
-}
-function digSubClass(superClass,subClassName){
-  addChild(superClass,{name: objStore[subClassName].name, size: objStore[subClassName].number_of_lines});
-
-  if (objStore[subClassName].extended_by.length){
-      // dig deeper into subclass children
-      superClass = superClass.children[superClass.children.length -1];
-      digIntoSubclasses(superClass, objStore[subClassName]);
-  }
-  if (objStore[subClassName].implemented_by.length){
-      // dig deeper into subclass children
-      superClass = superClass.children[superClass.children.length -1];
-      digIntoSubclasses(superClass, objStore[subClassName]);
-  }
+    console.log(rootNodes);
+    return rootNodes;
 }
 
-function digIntoSubclasses(superClass,subClass){
-  for (let i = 0; i < subClass.extended_by.length; i++) {
-      let subClassName = subClass.extended_by[i];
-      digSubClass(superClass,subClassName);
-  }
-  for (let i = 0; i < subClass.implemented_by.length; i++) {
-      let subClassName = subClass.implemented_by[i];
-      digSubClass(superClass,subClassName);
-  }
-  // console.log(objStore["PRINT"].functions)
-  // if (subClass.name == "PRINT"){
-  //     console.log(subClass)
-  // }
+function getClassNode(outputJSONClass, outputJSONClasses) {
+    let classNode = {
+        name: outputJSONClass.name,
+        size: outputJSONClass.number_of_lines,
+        fields: outputJSONClass.fields,
+        isClass: true
+    };
+    let funcNodes = getFunctionsForClassNode(outputJSONClass);
+    let subClassNodes = getSubclassNodesForClassNode(outputJSONClass, outputJSONClasses);
 
-  addFunctionsToCircle(superClass,objStore[subClass.name]);
+    if (funcNodes.length > 0 || subclassNodes.length > 0) {
+        classNode.children = [];
+        funcNodes.forEach((node) => {
+            classNode.children.push(node);
+        });
+
+        subClassNodes.forEach((node) => {
+           classNode.children.push(node);
+        });
+    }
+
+    return classNode;
 }
 
-function addChild(parent,child){
-  if (parent.children){
-      parent.children.push(child)
-  }else{
-      parent.children = [child]
-  }
+function getSubclassNodesForClassNode(outputJSONClass, outputJSONClasses) {
+    let subclassNodes = [];
+    if (outputJSONClass.extended_by.length > 0) {
+        outputJSONClass.extended_by.forEach((extendedClassName) => {
+            let extendedClassJSON = _.find(outputJSONClasses, {name: extendedClassName});
+            let extendedClassNode = getClassNode(extendedClassJSON, outputJSONClasses);
+            subclassNodes.push(extendedClassNode);
+        });
+    }
+
+    if (outputJSONClass.implemented_by.length > 0) {
+        outputJSONClass.implemented_by.forEach((extendedClassName) => {
+            let implementedClassJSON = _.find(outputJSONClasses, {name: extendedClassName});
+            let implementedClassNode = getClassNode(implementedClassJSON, outputJSONClasses);
+            subclassNodes.push(implementedClassNode);
+        });
+    }
+
+    return subclassNodes;
 }
 
-function orderInheritance(output){
-  // let outputJson = JSON.parse(output);
-  let outputJson = output;
-  // console.log(outputJson.classes[0].name);
-  outputJson.classes.forEach(element =>{
-      objStore[element.name] = element;
-  });
-
-
-  for (let key in objStore){
-      let classObj = objStore[key];
-      // console.log(classStore["Node"])
-
-      // console.log(classObj)
-      if (!classObj.part_of.length){
-          // root class, add as top level prop on classStore
-          classStore[classObj.name] = {
-              name: classObj.name,
-              size: classObj.number_of_lines,
-              fields: classObj.fields,
-              isClass: true
-          };
-          if (!classStore[classObj.name].children){
-              classStore[classObj.name].children = [];
-          }
-          // add functions to root class
-          //console.log(classObj.functions)
-
-
-          // dig into extended_by
-          if (classObj.extended_by.length || classObj.implemented_by.length){
-
-              digIntoSubclasses(classStore[classObj.name], classObj);
-              console.log(objStore["Tokenizer"])
-
-          }else{
-              // no sub classes, add functions to circle
-              addFunctionsToCircle(classStore[classObj.name],classObj);
-              //console.log( classStore[classObj.name].children)
-          }
-      }
-  }
-
-
+function getFunctionsForClassNode(outputJSONClass) {
+    let funcNodes = [];
+    outputJSONClass.functions.forEach((outputFunc) => {
+       let funcNode = {
+           name: outputFunc.name,
+           size: outputFunc.methodLines,
+           outputFuncJSON: outputFunc
+       };
+       if(! funcNode.size){
+           funcNode.size = 1.5; // Abstract
+       }
+       funcNodes.push(funcNode);
+    });
+    return funcNodes;
 }
-
-// END KUSH CODE
 
 d3.json("output.json", function(error, root) {
   if (error) throw error;
 
-  orderInheritance(root);
-  console.log(classStore);
-  d3JSON = {name:"Entry", children: []}
-  for (let key in classStore) {
-      let javaClass = classStore[key];
-      d3JSON.children.push(javaClass);
-  }
+  let d3JSON = {name : "Ultimate Big Daddy"};
+  d3JSON.children = getRootNodes(root);
   console.log(d3JSON);
 
   root = d3.hierarchy(d3JSON)
