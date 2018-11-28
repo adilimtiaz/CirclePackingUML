@@ -140,7 +140,7 @@ d3.json("output1.json", function(error, root) {
       .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
       .style("fill", function(d) {
           if(d.data.size == 1.5) { // Abstract function
-            return "hsl(0, 57%, 92%)";
+            return "#efc8c6";
           }
           if(d.data.isClass && !d.data.size){
             return "#ab9ee5";
@@ -180,7 +180,7 @@ d3.json("output1.json", function(error, root) {
   }
 
   function tooltipover(d) {
-    if (d.parent === focus) {
+    if (d.parent === focus || d === focus) {
         div.transition()
           .duration(200)
           .style("opacity", .9);
@@ -190,7 +190,7 @@ d3.json("output1.json", function(error, root) {
 
   function tooltipmove(d) {
     console.log(d);
-    if (d.parent === focus) {
+    if (d.parent === focus || d === focus) {
         // Parent is focus, so show tooltip
         var linesToDisplay = 1;
         var divOutput = "";
@@ -209,7 +209,7 @@ d3.json("output1.json", function(error, root) {
               divOutput += d.data.size + " lines";
           }
       } else {
-          divOutput = "Function <br/> <p style=\"text-align:left\">";
+          divOutput = ((d.data.size === 1.5) ? "<font color=\"#f1aaa7\"> Abstract </font>" : "") + "Function <br/> <p style=\"text-align:left\">";
           modifiers = "<font color=\"#85eae8\">";
           for(var i=0; i<d.data.outputFuncJSON.methodModifiers.length; i++){
               modifiers += d.data.outputFuncJSON.methodModifiers[i] + " ";
@@ -233,8 +233,10 @@ d3.json("output1.json", function(error, root) {
         linesToDisplay++;
         div.html(divOutput)
             .attr('height', (15*linesToDisplay))
-            .style("left", (d3.event.pageX) + 10 + "px")
-            .style("top", (d3.event.pageY - 8 - (15*linesToDisplay)) + "px");
+            .style('background', function(t) { return (d.data.isClass) ? "#1d355b" : "#41343f"; })
+            .style("left", function(d) {
+                return (containerDiv.clientWidth > containerDiv.clientHeight) ? (d3.event.pageX) + 10 + "px" : (d3.event.pageX) - 100 + "px"; })
+            .style("top", (d3.event.pageY - 30 - (15*linesToDisplay)) + "px");
     }
   }
 
@@ -309,11 +311,11 @@ d3.json("output1.json", function(error, root) {
     var k = diameter / v[2]; view = v;
     node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
     circle.attr("r", function(d) { return d.r * k; })
-        .attr("pointer-events", function(d) {return (d.parent === focus) ? "all" : "none"}); //Pointer events only work if parent is focus
+        .attr("pointer-events", function(d) {return (d.parent === focus || (d.depth === focus.depth && d.children)) ? "all" : "none"}); //Pointer events only work if parent is focus
     originaltext = text;
-    text.style("font-size", diameter / 50 + "px")
+    text.style("font-size", diameter / 45 + "px")
         .text(function(d) {
-            cutoff = d.parent === focus ? d.r / 4 * (root.r/ focus.r) :  d.r / 4;
+            cutoff = d.parent === focus ? d.r / 5 * (root.r/ focus.r) :  d.r / 5;
             if (cutoff <= d.data.name.length) {
                 if (cutoff > 3) {
                     return d.data.name.substr(0, cutoff - 1) + "…";
