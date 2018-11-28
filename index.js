@@ -176,6 +176,7 @@ d3.json("output1.json", function(error, root) {
         div.transition()
           .duration(200)
           .style("opacity", .9);
+        tooltipmove(d);
     }
   }
 
