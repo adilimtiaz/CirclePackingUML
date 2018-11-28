@@ -156,8 +156,6 @@ function orderInheritance(output){
           }
       }
   }
-
-
 }
 
 // END KUSH CODE
