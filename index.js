@@ -13,6 +13,11 @@ var pack = d3.pack()
     .size([diameter - margin, diameter - margin])
     .padding(2);
 
+// Define the div for the info
+var infobox = d3.select("body").append("div")
+    .attr("class", "info")
+    .style("opacity", 0);
+
 function redraw() {
     // Deals with resizing the window
   var width = containerDiv.clientWidth;
@@ -30,6 +35,8 @@ function redraw() {
   pack
     .size([diameter - margin, diameter - margin])
     .padding(2);
+
+  infobox.style("left", width / 2 - 100 + "px");
 }
 
 redraw();
@@ -193,6 +200,25 @@ d3.json("output.json", function(error, root) {
       .on("mouseout", tooltipout)
       .on("click", function(d) { if (focus !== d && d.children) zoom(d), d3.event.stopPropagation(); });
 
+  function addInfoBox(d) {
+    infobox.transition()
+      .duration(200)
+      .style("opacity", .9);
+
+    divOutput = "In Class: " + d.data.name;
+
+    infobox.html(divOutput)
+        .attr('height', 20)
+        .style("left", containerDiv.clientWidth / 2 - 100 + "px")
+        .style("top", 20 + "px");
+  }
+
+  function removeInfoBox(d) {
+    infobox.transition()
+      .duration(200)
+      .style("opacity", 0);
+  }
+
   function tooltipover(d) {
     if (d.parent === focus) {
         div.transition()
@@ -264,6 +290,12 @@ d3.json("output.json", function(error, root) {
 
     transition.selectAll("circle")
       .style("fill-opacity", function(d) { return (d.parent === focus || d === focus || !d.parent) ? 1 : 0.2; })
+
+    if (focus !== root) {
+      addInfoBox(focus);
+    } else {
+      removeInfoBox(focus);
+    }
   }
 
 
