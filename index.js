@@ -141,9 +141,12 @@ d3.json("output1.json", function(error, root) {
     .enter().append("circle")
       .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
       .style("fill", function(d) {
-        if(d.data.size == 1.5) {
-          return "hsl(0, 57%, 92%)";
-        }
+          if(d.data.size == 1.5) { // Abstract function
+            return "hsl(0, 57%, 92%)";
+          }
+          if(d.data.isClass && !d.data.size){
+            return "hsl(150, 63%, 67%)";
+          }
         return d.children ? color(d.depth) : null;
       })
       .style("fill-opacity", function(d) { return (d.parent === focus || d === focus || !d.parent) ? 1 : 0.2; })
@@ -185,23 +188,23 @@ d3.json("output1.json", function(error, root) {
     if (d.parent === focus) {
         // Parent is focus, so show tooltip
         var linesToDisplay = 1;
-        var divOutput
-        if(d.data.isClass){
-          divOutput = "Class " + d.data.name + "<br/>  <p style=\"text-align:left\">";
+        var divOutput = "";
+        if(d.data.isClass) {
+          divOutput += d.data.size ? "Class " : "External Library ";
+          divOutput += d.data.name + "<br/>  <p style=\"text-align:left\">";
           linesToDisplay += 2; //Paragraph tag creates 2 line breaks
           for(var i=0; i<d.data.fields.length; i++){
             divOutput += d.data.fields[i] + "<br/>";
             linesToDisplay++;
           }
           divOutput += "</p>";
-          divOutput += d.data.size + " lines";
+          divOutput += d.data.size ? (d.data.size + " lines") : "";
       } else {
-          divOutput = "Function <br/> <p style=\"text-align:left\">"
+          divOutput = "Function <br/>";
           info = d.data.outputFuncJSON.name + "(" + d.data.outputFuncJSON.parameters + ")" + " : " + d.data.outputFuncJSON.return_type + "<br/>";
           divOutput += info;
           linesToDisplay++;
-          divOutput += "</p>";
-          divOutput += d.data.size  + " lines";
+          divOutput += d.data.size == 1.5 ? "" : (d.data.size  + " lines");
       }
         linesToDisplay++;
         div.html(divOutput)
@@ -222,7 +225,7 @@ d3.json("output1.json", function(error, root) {
     .enter().append("text")
       .attr("class", "label")
       .style("font-family", "Trebuchet MS")
-      .style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
+      .style("fill-opacity", function(d) {return d.parent === root ? 1 : 0;})
       .style("display", function(d) { return d.parent === root ? "inline" : "none"; })
       .text(function(d) {
           cutoff = d.r / 4 * (root.r/ focus.r);
