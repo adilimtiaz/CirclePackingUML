@@ -201,7 +201,7 @@ d3.json("output1.json", function(error, root) {
           divOutput += d.data.size ? (d.data.size + " lines") : "";
       } else {
           divOutput = "Function <br/> <p style=\"text-align:left\">";
-          modifiers = ""
+          modifiers = "<p style=\"text-align:left\">"
           for(var i=0; i<d.data.outputFuncJSON.methodModifiers.length; i++){
               modifiers += d.data.outputFuncJSON.methodModifiers[i] + " ";
           }
