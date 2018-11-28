@@ -6,7 +6,7 @@ var svg = d3.select(containerDiv).append("svg"),
 
 var color = d3.scaleLinear()
     .domain([-1, 5])
-    .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
+    .range(["hsl(181,80%,80%)", "hsl(260,30%,40%)"])
     .interpolate(d3.interpolateHcl);
 
 var pack = d3.pack()
@@ -68,7 +68,7 @@ function getClassNode(outputJSONClass, outputJSONClasses) {
     let funcNodes = getFunctionsForClassNode(outputJSONClass);
     let subClassNodes = getSubclassNodesForClassNode(outputJSONClass, outputJSONClasses);
 
-    if (funcNodes.length > 0 || subclassNodes.length > 0) {
+    if (funcNodes.length > 0 || subClassNodes.length > 0) {
         classNode.children = [];
         funcNodes.forEach((node) => {
             classNode.children.push(node);
@@ -119,7 +119,7 @@ function getFunctionsForClassNode(outputJSONClass) {
     return funcNodes;
 }
 
-d3.json("output.json", function(error, root) {
+d3.json("output1.json", function(error, root) {
   if (error) throw error;
 
   let d3JSON = {name : "Ultimate Big Daddy"};
@@ -183,21 +183,29 @@ d3.json("output.json", function(error, root) {
     console.log(d);
     if (d.parent === focus) {
         // Parent is focus, so show tooltip
-        var divOutput = d.data.name + "<br/>";
         var linesToDisplay = 1;
+        var divOutput
         if(d.data.isClass){
+          divOutput = "Class " + d.data.name + "<br/>  <p style=\"text-align:left\">";
+          linesToDisplay += 2; //Paragraph tag creates 2 line breaks
           for(var i=0; i<d.data.fields.length; i++){
             divOutput += d.data.fields[i] + "<br/>";
             linesToDisplay++;
           }
-        }
-        divOutput += d.data.size
-            + " lines";
+          divOutput += "</p>";
+          divOutput += d.data.size + " lines";
+      } else {
+          divOutput = "Function <br/>"
+          info = d.data.outputFuncJSON.name + "(" + d.data.outputFuncJSON.parameters + ")" + " : " + d.data.outputFuncJSON.return_type + "<br/>";
+          divOutput += info;
+          linesToDisplay++;
+          divOutput += d.data.size  + " lines";
+      }
         linesToDisplay++;
         div.html(divOutput)
             .attr('height', (15*linesToDisplay))
             .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 38) + "px");
+            .style("top", (d3.event.pageY - 8 - (15*linesToDisplay)) + "px");
     }
   }
 
@@ -214,7 +222,16 @@ d3.json("output.json", function(error, root) {
       .style("font-family", "Trebuchet MS")
       .style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
       .style("display", function(d) { return d.parent === root ? "inline" : "none"; })
-      .text(function(d) { return d.data.name; });
+      .text(function(d) {
+          cutoff = d.r / 4 * (root.r/ focus.r);
+          if (cutoff <= d.data.name.length) {
+              if (cutoff > 3) {
+                  return d.data.name.substr(0, cutoff - 1) + "…";
+              }
+              return "…";
+          }
+          return d.data.name;
+      });
 
   var node = g.selectAll("circle,text");
 
@@ -264,6 +281,17 @@ d3.json("output.json", function(error, root) {
     node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
     circle.attr("r", function(d) { return d.r * k; })
         .attr("pointer-events", function(d) {return (d.parent === focus) ? "all" : "none"}); //Pointer events only work if parent is focus
-    text.style("font-size", diameter / 50 + "px");
+    originaltext = text;
+    text.style("font-size", diameter / 50 + "px")
+        .text(function(d) {
+            cutoff = d.parent === focus ? d.r / 4 * (root.r/ focus.r) :  d.r / 4;
+            if (cutoff <= d.data.name.length) {
+                if (cutoff > 3) {
+                    return d.data.name.substr(0, cutoff - 1) + "…";
+                }
+                return "…";
+            }
+            return d.data.name;
+        });
   }
 });
