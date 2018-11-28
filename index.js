@@ -195,10 +195,11 @@ d3.json("output1.json", function(error, root) {
           divOutput += "</p>";
           divOutput += d.data.size + " lines";
       } else {
-          divOutput = "Function <br/>"
+          divOutput = "Function <br/> <p style=\"text-align:left\">"
           info = d.data.outputFuncJSON.name + "(" + d.data.outputFuncJSON.parameters + ")" + " : " + d.data.outputFuncJSON.return_type + "<br/>";
           divOutput += info;
           linesToDisplay++;
+          divOutput += "</p>";
           divOutput += d.data.size  + " lines";
       }
         linesToDisplay++;
