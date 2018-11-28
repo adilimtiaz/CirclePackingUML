@@ -201,13 +201,14 @@ d3.json("output1.json", function(error, root) {
           divOutput += d.data.size ? (d.data.size + " lines") : "";
       } else {
           divOutput = "Function <br/>";
-          modifiers = ""
+          modifiers = "<p style=\"text-align:left\">"
           for(var i=0; i<d.data.outputFuncJSON.methodModifiers.length; i++){
               modifiers += d.data.outputFuncJSON.methodModifiers[i] + " ";
           }
           info = modifiers + d.data.outputFuncJSON.name + "(" + d.data.outputFuncJSON.parameters + ")" + " : " + d.data.outputFuncJSON.return_type + "<br/>";
           divOutput += info;
           linesToDisplay++;
+          divOutput += "</p>";
           divOutput += d.data.size == 1.5 ? "" : (d.data.size  + " lines");
       }
         linesToDisplay++;
