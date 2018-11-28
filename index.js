@@ -193,12 +193,13 @@ d3.json("output1.json", function(error, root) {
             linesToDisplay++;
           }
           divOutput += "</p>";
-          divOutput += d.data.size
-              + " lines" + (d.children ? ", " +  d.children.length + (d.children.length === 1 ? " child" : " children") : "");
+          divOutput += d.data.size + " lines";
       } else {
-          divOutput = d.data.name + "<br/>";
-          divOutput += d.data.size
-              + " lines";
+          divOutput = "Function <br/>"
+          info = d.data.outputFuncJSON.name + "(" + d.data.outputFuncJSON.parameters + ")" + " : " + d.data.outputFuncJSON.return_type + "<br/>";
+          divOutput += info;
+          linesToDisplay++;
+          divOutput += d.data.size  + " lines";
       }
         linesToDisplay++;
         div.html(divOutput)
