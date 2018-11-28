@@ -5,8 +5,8 @@ var svg = d3.select(containerDiv).append("svg"),
     g = svg.append("g");
 
 var color = d3.scaleLinear()
-    .domain([-1, 5])
-    .range(["hsl(181,80%,80%)", "hsl(260,30%,40%)"])
+    .domain([-1, 4])
+    .range(["#1b1e23", "#5e9cff"])
     .interpolate(d3.interpolateHcl);
 
 var pack = d3.pack()
@@ -140,10 +140,10 @@ d3.json("output1.json", function(error, root) {
       .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
       .style("fill", function(d) {
           if(d.data.size == 1.5) { // Abstract function
-            return "#efc8c6";
+            return "#724747";
           }
           if(d.data.isClass && !d.data.size){
-            return "#ab9ee5";
+            return "#393763";
           }
         return d.children ? color(d.depth) : null;
       })
@@ -251,6 +251,7 @@ d3.json("output1.json", function(error, root) {
     .enter().append("text")
       .attr("class", "label")
       .style("font-family", "Trebuchet MS")
+      .style("fill", "white")
       .style("fill-opacity", function(d) {return d.parent === root ? 1 : 0;})
       .style("display", function(d) { return d.parent === root ? "inline" : "none"; })
       .text(function(d) {
